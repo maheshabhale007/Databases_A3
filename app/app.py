@@ -1693,6 +1693,29 @@ def team():
 
     return render_template('admin/team.html', team_details=team_details, position_names=position_names,
                            project_names=project_names)
+    
+@app.route("/apply",methods=['GET','POST'])
+def apply():
+    if(request.method=='POST'):
+        form=request.form
+        if(form['signal']=='applyTrainer'):
+            print("This is a trainer application")
+            print("Name:", form['name'])
+            print("Email:", form['email'])
+            print("Phone:", form['phone_number'])
+            print("Project year: ", form['project_year'])
+            print("Gender: ", form['gender'])
+            print("Fee: ", form['fee'])
+        elif(form['signal']=='applyVolunteer'):
+            print("This is a volunteer application")
+            print("Name:", form['name'])
+            print("Email:", form['email'])
+            print("Phone:", form['phone_number'])
+            print("Project year: ", form['project_year'])
+            print("Gender: ", form['gender'])
+    
+    return render_template('apply.html')
+
 
 if __name__ == '__main__':
     app.run(debug=True)
