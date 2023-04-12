@@ -1,9 +1,12 @@
-import MySQLdb
+# import MySQLdb
 from flask import Flask, render_template, request, redirect, url_for, flash, session
 from flask_mysqldb import MySQL
 import yaml
 from email_script import send_email
 import secrets
+from datetime import datetime
+import mysql.connector
+
 
 app = Flask(__name__)
 app.secret_key='secret_key'
@@ -1698,22 +1701,99 @@ def team():
 def apply():
     if(request.method=='POST'):
         form=request.form
+        cur = mysql.connection.cursor()
+
         if(form['signal']=='applyTrainer'):
-            print("This is a trainer application")
-            print("Name:", form['name'])
-            print("Email:", form['email'])
-            print("Phone:", form['phone_number'])
-            print("Project year: ", form['project_year'])
-            print("Gender: ", form['gender'])
-            print("Fee: ", form['fee'])
-        elif(form['signal']=='applyVolunteer'):
-            print("This is a volunteer application")
-            print("Name:", form['name'])
-            print("Email:", form['email'])
-            print("Phone:", form['phone_number'])
-            print("Project year: ", form['project_year'])
-            print("Gender: ", form['gender'])
+
+            name = request.form['name']
+            email = request.form['email']
+            phone_number = request.form['phone_number']
+            
+            # Uncomment this
+            # project_name = request.form['project_name']
+            
+            project_name = 'Project A'
+            project_year = request.form['project_year']
+            gender = request.form['gender']
+            fee = request.form['fee']
+            dob = request.form['dob']
+            dob_date = datetime.strptime(dob, '%Y-%m-%d')
+            age = (datetime.now() - dob_date).days // 365    
+            
+            count_till_now_query = f" SELECT COUNT(*) FROM requestDetails"
+            count_till_now_query = cur.execute(count_till_now_query)
+            count_till_now = cur.fetchone()
+            
+            if len(count_till_now) > 0:
+                count_till_now = count_till_now[0]
+            else:
+                count_till_now = 0
+            
+            add_query = f"INSERT INTO Trainers (email_id, fee, name, age, gender) "
+            add_query = add_query + \
+                f"VALUES (\'{email}\', \'{fee}\', \'{name}\', \'{age}\', \'{gender}\')"
+            temp_string = add_query
+            add_query = "$" + add_query + "$"
     
+            add_project_query = f"INSERT INTO trains (email_id, event_name, start_date) "
+            add_project_query = add_project_query + \
+                f"VALUES (\'{email}\', \'{project_name}\', (SELECT start_date FROM Projects WHERE event_name = \'{project_name}\' AND YEAR(start_date) = \'{project_year}\'))"
+            add_project_query = "$" + add_project_query + "$"
+            
+            query_passed = add_query + add_project_query
+            
+            add_to_request_details_query = f"INSERT INTO requestDetails (Sr_No, Apply_for, Applied_on, Name, Status, Query) "
+            add_to_request_details_query = add_to_request_details_query + \
+                f"VALUES (\'{count_till_now + 1}\', \'{'trainer'}\', \'{datetime.now()}\', \'{name}\', \'{'pending'}\', \"{query_passed}\")"
+            exec_add_to_request_details_query = cur.execute(add_to_request_details_query)
+            mysql.connection.commit()
+            
+            print("Trainer added to request details")
+
+        elif(form['signal']=='applyVolunteer'):
+            name = request.form['name']
+            email = request.form['email']
+            phone_number = request.form['phone_number']
+            
+            # Uncomment this once you give route to requestdetails page
+            # project_name = request.form['project_name']
+            
+            project_name = 'Project A'
+            project_year = request.form['project_year']
+            gender = request.form['gender']
+            dob = request.form['dob']
+            dob_date = datetime.strptime(dob, '%Y-%m-%d')
+            age = (datetime.now() - dob_date).days // 365
+
+            # Find the number of records in table till now
+            count_till_now_query = f" SELECT COUNT(*) FROM requestDetails"
+            count_till_now_query = cur.execute(count_till_now_query)
+            count_till_now = cur.fetchone()
+
+            if len(count_till_now) > 0:
+                count_till_now = count_till_now[0]
+            else:
+                count_till_now = 0
+
+            add_query = f"INSERT INTO Volunteers (email_id, name, phone_number, date_of_birth, gender) "
+            add_query = add_query + \
+                f"VALUES (\'{email}\', \'{name}\', \'{phone_number}\', \'{dob}\', \'{gender}\')"
+            add_query = "$" + add_query + "$"
+
+            add_project_query = f"INSERT INTO volunteering (email_id, event_name, start_date) "
+            add_project_query = add_project_query + \
+                f"VALUES (\'{email}\', \'{project_name}\', (SELECT start_date FROM Projects WHERE event_name = \'{project_name}\' AND YEAR(start_date) = \'{project_year}\'))"
+            add_project_query = "$" + add_project_query + "$"
+
+            query_passed = add_query + add_project_query
+
+            add_to_request_details_query = f"INSERT INTO requestDetails (Sr_No, Apply_for, Applied_on, Name, Status, Query) "
+            add_to_request_details_query = add_to_request_details_query + \
+                f"VALUES (\'{count_till_now + 1}\', \'{'volunteer'}\', \'{datetime.now()}\', \'{name}\', \'{'pending'}\', \"{query_passed}\")"
+            exec_add_to_request_details_query = cur.execute(add_to_request_details_query)
+            mysql.connection.commit()
+
+
     return render_template('apply.html')
 
 
