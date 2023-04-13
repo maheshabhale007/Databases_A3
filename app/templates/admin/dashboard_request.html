@@ -20,15 +20,15 @@
                 <tbody>
                     {% for user in profileDetails %}
                     <tr>
-                        <td>{{user['Sr_No']}}</td>
-                        <td>{{user['Apply_for']}}</td>
+                        <td headers="srno">{{user['Sr_No']}}</td>
+                        <td headers="position">{{user['Apply_for']}}</td>
                         <td>{{user['Applied_on']}}</td>
                         <td>{{user['Name']}}</td>
                         <td>{{user['Status']}}</td>
                         <td>{{user['Query']}}</td>
                         <td>
                             <button type="button" class="btn btn-primary btn-sm" data-toggle="modal"
-                                data-target="#acceptModal" onclick="edit(this)">
+                                data-target="#acceptModal" onclick="accept_user(this)">
                                 Accept
                             </button>
                             <button type="button" class="btn btn-danger btn-sm" data-toggle="modal"
@@ -64,8 +64,8 @@
                     <form name="acceptForm" method="POST">
                         <input type="hidden" name="signal" value="accept">
                         <div>
-                            <label for="name_accept">Name</label>
-                            <input type="text" class="form-control" id="name_accept" name="name" readonly>
+                            <label for="SrNo_reject">Sr_No.</label>
+                            <input type="text" class="form-control" id="SrNo_reject" name="SrNo" readonly>
                         </div>
                         <div>
                             <label for="position_accept">Position</label>
@@ -99,11 +99,11 @@
                     Are you sure you want to reject?
                 </div>
                 <div class="modal-footer">
-                    <form name="acceptForm" method="POST">
-                        <input type="hidden" name="signal" value="accept">
+                    <form name="rejectForm" method="POST">
+                        <input type="hidden" name="signal" value="reject">
                         <div>
-                            <label for="name_reject">Name</label>
-                            <input type="text" class="form-control" id="name_reject" name="name" readonly>
+                            <label for="SrNo_reject">Sr_No.</label>
+                            <input type="text" class="form-control" id="SrNo_reject" name="SrNo" readonly>
                         </div>
                         <div>
                             <label for="position_reject">Position</label>
@@ -160,4 +160,37 @@
     </div>
 
 </div>
+
+<script>
+
+    function accept_user(e) {
+        let p = e.parentNode.parentNode;
+        let srno = p.querySelector('td[headers="srno"]').innerHTML;
+        console.log(srno)
+        let position = p.querySelector('td[headers="position"]').innerHTML;
+        let form = document.querySelector("form[name='acceptForm']");
+
+
+        form.querySelector("input[name='SrNo']").value = srno;
+        form.querySelector("input[name='position']").value = position;
+      }
+
+
+    function delete_user(e) {
+        let p = e.parentNode.parentNode;
+        let srno = p.querySelector('td[headers="srno"]').innerHTML;
+        console.log(srno)
+        let position = p.querySelector('td[headers="position"]').innerHTML;
+        let form = document.querySelector("form[name='rejectForm']");
+
+
+        form.querySelector("input[name='SrNo']").value = srno;
+        form.querySelector("input[name='position']").value = position;
+      }
+
+</script>
+
+
+
+
 {% endblock content %}

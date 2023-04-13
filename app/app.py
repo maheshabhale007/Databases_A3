@@ -1,11 +1,11 @@
 # import MySQLdb
+import MySQLdb
 from flask import Flask, render_template, request, redirect, url_for, flash, session
 from flask_mysqldb import MySQL
 import yaml
 from email_script import send_email
 import secrets
 from datetime import datetime
-import mysql.connector
 
 
 app = Flask(__name__)
@@ -116,7 +116,7 @@ def user_profile():
     if result_value == 1:
         user = cur.fetchall()[0]
         user_profile = {
-            'employ_id': user[0],
+            'employ_id': user[0], 
             'name': user[1],
             'email_id': user[2],
             'salary': user[3],
@@ -161,6 +161,38 @@ def requestDetails():
         }
         profileDetails.append(user_profile)
 
+
+    # Reject
+    if (request.method == 'POST'):
+        if request.form['signal'] == 'reject':
+            print(request.form)
+            print("RejectDetails filled!")
+
+
+            name = request.form['SrNo']
+            position = request.form['position']
+
+            print(name, position)
+
+
+            # project = request.form['']
+
+            return redirect('/admin/requestDetails')
+        
+        elif request.form['signal'] == 'accept':
+                print(request.form)
+                print("AcceptDetails filled!")
+
+
+                name = request.form['SrNo']
+                position = request.form['position']
+
+                print(name, position)
+
+
+                # project = request.form['']
+
+                return redirect('/admin/requestDetails')
     
     return render_template("admin/dashboard_request.html", profileDetails=profileDetails)
         
