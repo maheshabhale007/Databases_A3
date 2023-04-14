@@ -637,4 +637,25 @@ VALUES
 
 INSERT INTO belongs (aadhar_id, pincode)
 VALUES 
-(123450987651, 380001)
+(123450987651, 380001);
+
+
+create table requestDetails (
+Sr_No int,
+Apply_for enum('trainer', 'volunteer') not null,
+Applied_on date,
+Name varchar(50),
+Status enum('Pending', 'Accepted', 'Rejected') not null,
+Query varchar(255),
+QueryRelationship varchar(255)
+);
+
+INSERT INTO requestDetails (Sr_No, Apply_for, Applied_on, Name, Status, Query, QueryRelationship) VALUES
+(1, 'trainer', '2023-03-31', 'John Smith', 'Pending', 'SELECT * FROM users', 'Query 2'),
+(2, 'volunteer', '2023-03-31', 'Jane Doe', 'Accepted', 'INSERT INTO events (title, date) VALUES ("Charity Walk", "2023-04-15")', 'Query 2'),
+(3, 'trainer', '2023-04-01', 'Michael Johnson', 'Rejected', 'UPDATE inventory SET quantity = quantity - 10 WHERE item_id = 5', 'Query 2'),
+(4, 'volunteer', '2023-04-01', 'Jessica Lee', 'Accepted', 'DELETE FROM tasks WHERE task_id = 15', 'Query 2');
+
+-- select * from requestDetails;
+
+INSERT INTO requestDetails (Sr_No, Apply_for, Applied_on, Name, Status, Query, QueryRelationship) VALUES ('6', 'trainer', '2023-04-14', 'Dheeraj', 'Pending', "INSERT INTO Trainers (email_id, fee, name, age, gender) VALUES ('d@d.com', '1', 'Dheeraj', '1', 'male')", "INSERT INTO trains (email_id, event_name, start_date) VALUES ('d@d.com', 'Project A', (SELECT start_date FROM Projects WHERE event_name = 'Project A' AND YEAR(start_date) = '2022'))" )

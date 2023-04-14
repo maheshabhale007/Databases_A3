@@ -1,5 +1,16 @@
 {% extends 'layout.html'%}
 {% block content %}
+
+    {% with messages=get_flashed_messages() %}
+    {% if messages %}
+    {% for message in messages %}
+        <div class="alert alert-danger" role="alert">
+          {{ message }}
+        </div>
+    {% endfor %}
+    {% endif %}
+    {% endwith %}
+
 <div class="container d-flex w-50 justify-content-between m-5 mx-auto">
     <div>
         <div class="card" style="width: 18rem;">
@@ -53,8 +64,8 @@
 
 
             <div class="form-group">
-              <label for="dob">DOB</label>
-              <input type="date" class="form-control" id="dob" name="dob" required>
+              <label for="age_add">Age</label>
+              <input type="number" class="form-control" id="age_add" name="age" max="200">
             </div>
 
             <div class="form-group">

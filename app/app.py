@@ -143,59 +143,7 @@ def user_profile():
 
     return render_template("admin/user_profile.html", profileDetails=profileDetails, type=type)
 
-@app.route("/admin/requestDetails", methods=['POST', 'GET'])
-def requestDetails():
-    # type = restrict_child_routes()
-    # if type == 'No_access':
-    #     return redirect(url_for('login'))
 
-    cur = mysql.connection.cursor()
-    result_value = cur.execute("SELECT * FROM requestDetails")
-    if result_value > 0:
-        userDetails = cur.fetchall()
-
-    profileDetails = []
-    for user in userDetails:
-        user_profile = {
-            'Sr_No': user[0], 'Apply_for': user[1], 'Applied_on': user[2], 'Name': user[3], 'Status': user[4], 'Query': user[5]
-        }
-        profileDetails.append(user_profile)
-
-
-    # Reject
-    if (request.method == 'POST'):
-        if request.form['signal'] == 'reject':
-            print(request.form)
-            print("RejectDetails filled!")
-
-
-            name = request.form['SrNo']
-            position = request.form['position']
-
-            print(name, position)
-
-
-            # project = request.form['']
-
-            return redirect('/admin/requestDetails')
-        
-        elif request.form['signal'] == 'accept':
-                print(request.form)
-                print("AcceptDetails filled!")
-
-
-                name = request.form['SrNo']
-                position = request.form['position']
-
-                print(name, position)
-
-
-                # project = request.form['']
-
-                return redirect('/admin/requestDetails')
-    
-    return render_template("admin/dashboard_request.html", profileDetails=profileDetails)
-        
 
 
 @app.route("/admin/dashboard", methods=['POST', 'GET'])
@@ -1731,27 +1679,35 @@ def team():
     
 @app.route("/apply",methods=['GET','POST'])
 def apply():
+    cur = mysql.connection.cursor()
+
+    # Generate projects list
+    projects_query = f"SELECT event_name FROM Projects"
+    projects_query = cur.execute(projects_query)
+    projects = cur.fetchall()
+
     if(request.method=='POST'):
         form=request.form
         cur = mysql.connection.cursor()
 
         if(form['signal']=='applyTrainer'):
 
+            today = datetime.today().strftime('%Y-%m-%d')
+
             name = request.form['name']
             email = request.form['email']
             phone_number = request.form['phone_number']
-            
-            # Uncomment this
-            # project_name = request.form['project_name']
-            
-            project_name = 'Project A'
+
+            project_name = request.form['project_name']
             project_year = request.form['project_year']
+
+            if check_project_year_combination(project_name, project_year) == False:
+                flash(f"Project {project_name} is not available for year {project_year}", 'danger')
+                return redirect('/apply')
+
             gender = request.form['gender']
             fee = request.form['fee']
-            dob = request.form['dob']
-            dob_date = datetime.strptime(dob, '%Y-%m-%d')
-            age = (datetime.now() - dob_date).days // 365    
-            
+            age = request.form['age']
             count_till_now_query = f" SELECT COUNT(*) FROM requestDetails"
             count_till_now_query = cur.execute(count_till_now_query)
             count_till_now = cur.fetchone()
@@ -1764,34 +1720,36 @@ def apply():
             add_query = f"INSERT INTO Trainers (email_id, fee, name, age, gender) "
             add_query = add_query + \
                 f"VALUES (\'{email}\', \'{fee}\', \'{name}\', \'{age}\', \'{gender}\')"
-            temp_string = add_query
-            add_query = "$" + add_query + "$"
     
             add_project_query = f"INSERT INTO trains (email_id, event_name, start_date) "
             add_project_query = add_project_query + \
                 f"VALUES (\'{email}\', \'{project_name}\', (SELECT start_date FROM Projects WHERE event_name = \'{project_name}\' AND YEAR(start_date) = \'{project_year}\'))"
-            add_project_query = "$" + add_project_query + "$"
             
-            query_passed = add_query + add_project_query
-            
-            add_to_request_details_query = f"INSERT INTO requestDetails (Sr_No, Apply_for, Applied_on, Name, Status, Query) "
+            add_to_request_details_query = f"INSERT INTO requestDetails (Sr_No, Apply_for, Applied_on, Name, Status, Query, QueryRelationship) "
             add_to_request_details_query = add_to_request_details_query + \
-                f"VALUES (\'{count_till_now + 1}\', \'{'trainer'}\', \'{datetime.now()}\', \'{name}\', \'{'pending'}\', \"{query_passed}\")"
+                f"VALUES (\'{count_till_now + 1}\', \'{'trainer'}\', \'{today}\', \'{name}\', \'{'Pending'}\', \"{add_query}\", \"{add_project_query}\" )"
+
+            # print(add_to_request_details_query)
             exec_add_to_request_details_query = cur.execute(add_to_request_details_query)
             mysql.connection.commit()
-            
-            print("Trainer added to request details")
+
+            Applied_log = f"Successfully applied for Trainer {name} on {today} for project {project_name} in year {project_year}. Now admin will review the request and will approve or reject it."
+            flash(Applied_log, 'info')
 
         elif(form['signal']=='applyVolunteer'):
+            today = datetime.today().strftime('%Y-%m-%d')
+
             name = request.form['name']
             email = request.form['email']
             phone_number = request.form['phone_number']
-            
-            # Uncomment this once you give route to requestdetails page
-            # project_name = request.form['project_name']
-            
-            project_name = 'Project A'
+
+            project_name = request.form['project_name']
             project_year = request.form['project_year']
+
+            if check_project_year_combination(project_name, project_year) == False:
+                flash(f"Project {project_name} is not available for year {project_year}", 'danger')
+                return redirect('/apply')
+
             gender = request.form['gender']
             dob = request.form['dob']
             dob_date = datetime.strptime(dob, '%Y-%m-%d')
@@ -1810,23 +1768,105 @@ def apply():
             add_query = f"INSERT INTO Volunteers (email_id, name, phone_number, date_of_birth, gender) "
             add_query = add_query + \
                 f"VALUES (\'{email}\', \'{name}\', \'{phone_number}\', \'{dob}\', \'{gender}\')"
-            add_query = "$" + add_query + "$"
 
             add_project_query = f"INSERT INTO volunteering (email_id, event_name, start_date) "
             add_project_query = add_project_query + \
                 f"VALUES (\'{email}\', \'{project_name}\', (SELECT start_date FROM Projects WHERE event_name = \'{project_name}\' AND YEAR(start_date) = \'{project_year}\'))"
-            add_project_query = "$" + add_project_query + "$"
 
-            query_passed = add_query + add_project_query
-
-            add_to_request_details_query = f"INSERT INTO requestDetails (Sr_No, Apply_for, Applied_on, Name, Status, Query) "
+            add_to_request_details_query = f"INSERT INTO requestDetails (Sr_No, Apply_for, Applied_on, Name, Status, Query, QueryRelationship) "
             add_to_request_details_query = add_to_request_details_query + \
-                f"VALUES (\'{count_till_now + 1}\', \'{'volunteer'}\', \'{datetime.now()}\', \'{name}\', \'{'pending'}\', \"{query_passed}\")"
+                f"VALUES (\'{count_till_now + 1}\', \'{'volunteer'}\', \'{today}\', \'{name}\', \'{'Pending'}\', \"{add_query}\", \"{add_project_query}\" )"
+
             exec_add_to_request_details_query = cur.execute(add_to_request_details_query)
             mysql.connection.commit()
 
+            Applied_log = f"Successfully applied for Volunteer {name} on {today} for project {project_name} in year {project_year}. Now admin will review the request and will approve or reject it."
+            flash(Applied_log, 'info')
 
-    return render_template('apply.html')
+
+    return render_template('apply.html', projects=projects)
+
+
+@app.route("/admin/requestDetails", methods=['POST', 'GET'])
+def requestDetails():
+    # type = restrict_child_routes()
+    # if type == 'No_access':
+    #     return redirect(url_for('login'))
+
+    cur = mysql.connection.cursor()
+    result_value = cur.execute("SELECT * FROM requestDetails")
+    if result_value > 0:
+        userDetails = cur.fetchall()
+
+    pendingRequests = []
+    completedRequests = []
+    for user in userDetails:
+        user_profile = {
+            'Sr_No': user[0], 'Apply_for': user[1], 'Applied_on': user[2], 'Name': user[3], 'Status': user[4],
+            'Query': user[5]
+        }
+
+        if user[4] == 'Pending':
+            pendingRequests.append(user_profile)
+        else:
+            completedRequests.append(user_profile)
+
+    # Reject
+    if (request.method == 'POST'):
+        if request.form['signal'] == 'reject':
+            srno = request.form['SrNo']
+            position = request.form['position']
+
+            query_select = f"SELECT * FROM requestDetails WHERE Sr_No = \'{srno}\'"
+            result_value = cur.execute(query_select)
+
+            if result_value < 0:
+                return redirect('/admin/requestDetails')
+
+            # update requestDetails table for status to completed
+            query_update = f"UPDATE requestDetails SET Status = \'Rejected\' WHERE Sr_No = \'{srno}\'"
+            result_value = cur.execute(query_update)
+            mysql.connection.commit()
+
+            return redirect('/admin/requestDetails')
+
+        elif request.form['signal'] == 'accept':
+            srno = request.form['SrNo']
+            position = request.form['position']
+
+            query_select = f"SELECT * FROM requestDetails WHERE Sr_No = \'{srno}\'"
+            result_value = cur.execute(query_select)
+            if result_value > 0:
+                row = cur.fetchall()[0]
+            else:
+                return redirect('/admin/requestDetails')
+
+            applied_for = row[1]
+            add_query = row[5]
+            add_project_query = row[6]
+
+            # insert into respective table
+            if applied_for == 'trainer':
+                exec_query = cur.execute(add_query)
+                mysql.connection.commit()
+
+                exec_query = cur.execute(add_project_query)
+                mysql.connection.commit()
+            elif applied_for == 'volunteer':
+                exec_query = cur.execute(add_query)
+                mysql.connection.commit()
+
+                exec_query = cur.execute(add_project_query)
+                mysql.connection.commit()
+
+            # update requestDetails table for status to completed
+            query_update = f"UPDATE requestDetails SET Status = \'Accepted\' WHERE Sr_No = \'{srno}\'"
+            result_value = cur.execute(query_update)
+            mysql.connection.commit()
+
+            return redirect('/admin/requestDetails')
+
+    return render_template("admin/dashboard_request.html", pendingRequests=pendingRequests, completedRequests=completedRequests)
 
 
 if __name__ == '__main__':

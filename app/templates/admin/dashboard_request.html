@@ -5,7 +5,7 @@
         <h1 style="margin-top: 30px;">Dashboard</h1>
         <hr>
         <div style=" margin-top: 20px">
-            <h5>Request Status View</h5>
+            <h5>Pending Requests</h5>
             <table class="table">
                 <thead>
                     <tr>
@@ -13,19 +13,17 @@
                         <th>Apply For</th>
                         <th>Applied On</th>
                         <th>Name</th>
-                        <th>Status</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {% for user in profileDetails %}
+                    {% for user in pendingRequests %}
                     <tr>
                         <td headers="srno">{{user['Sr_No']}}</td>
                         <td headers="position">{{user['Apply_for']}}</td>
                         <td>{{user['Applied_on']}}</td>
                         <td>{{user['Name']}}</td>
-                        <td>{{user['Status']}}</td>
-                        <td>{{user['Query']}}</td>
+
                         <td>
                             <button type="button" class="btn btn-primary btn-sm" data-toggle="modal"
                                 data-target="#acceptModal" onclick="accept_user(this)">
@@ -160,6 +158,38 @@
     </div>
 
 </div>
+
+
+    <div style=" margin-top: 20px">
+            <h5>Completed Requests</h5>
+            <table class="table" style="background-color: darkgrey">
+                <thead>
+                    <tr>
+                        <th>SrNo</th>
+                        <th>Apply For</th>
+                        <th>Applied On</th>
+                        <th>Name</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user in completedRequests %}
+                    <tr>
+                        <td headers="srno">{{user['Sr_No']}}</td>
+                        <td headers="position">{{user['Apply_for']}}</td>
+                        <td>{{user['Applied_on']}}</td>
+                        <td>{{user['Name']}}</td>
+                        {% if user['Status'] == 'Accepted' %}
+                        <td style="background-color: chartreuse">{{ user['Status'] }}</td>
+                        {% else %}
+                        <td style="background-color: red">{{ user['Status'] }}</td>
+                        {% endif %}
+                    </tr>
+                    {% endfor %}
+            </table>
+
+        </div>
+
 
 <script>
 
