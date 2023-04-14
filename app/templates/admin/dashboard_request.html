@@ -1,0 +1,196 @@
+{% extends '/admin/dashboard.html'%}
+{% block content %}
+<div>
+    <div>
+        <h1 style="margin-top: 30px;">Applications</h1>
+        <hr>
+        <div style=" margin-top: 20px">
+            <h5>Pending Requests</h5>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>SrNo</th>
+                        <th>Apply For</th>
+                        <th>Applied On</th>
+                        <th>Name</th>
+                        <th>Project Name</th>
+                        <th>Project Start Date</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user in pendingRequests %}
+                    <tr>
+                        <td headers="srno">{{user['Sr_No']}}</td>
+                        <td headers="position">{{user['Apply_for']}}</td>
+                        <td>{{user['Applied_on']}}</td>
+                        <td>{{user['Name']}}</td>
+                        <td>{{ user['event_name'] }}</td>
+                        <td>{{ user['start_date'] }}</td>
+
+                        <td>
+                            <button type="button" class="btn btn-primary btn-sm" data-toggle="modal"
+                                data-target="#acceptModal" onclick="accept_user(this)">
+                                Accept
+                            </button>
+                            <button type="button" class="btn btn-danger btn-sm" data-toggle="modal"
+                                data-target="#rejectModal" onclick="delete_user(this)">
+                                Reject
+                            </button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+            </table>
+
+        </div>
+    </div>
+
+    <div class="modal fade" id="acceptModal" tabindex="-1" role="dialog" aria-labelledby="acceptModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="acceptModalLabel">Accept Applicant</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    Are you sure you want to accept?
+                </div>
+                <div class="modal-footer">
+                    <form name="acceptForm" method="POST">
+                        <input type="hidden" name="signal" value="accept">
+                        <div>
+                            <label for="SrNo_reject">Sr_No.</label>
+                            <input type="text" class="form-control" id="SrNo_reject" name="SrNo" readonly>
+                        </div>
+                        <div>
+                            <label for="position_accept">Position</label>
+                            <input type="text" class="form-control" id="position_accept" name="position" readonly>
+                        </div>
+                        <div class="d-flex flex-row my-2">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal" style="margin-right: 10px;">
+                                Cancel
+                            </button>
+                            <button type="submit" class="btn btn-primary" id="acceptButton">
+                                Accept
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="modal fade" id="rejectModal" tabindex="-1" role="dialog" aria-labelledby="rejectModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="rejectModalLabel">Reject Applicant</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    Are you sure you want to reject?
+                </div>
+                <div class="modal-footer">
+                    <form name="rejectForm" method="POST">
+                        <input type="hidden" name="signal" value="reject">
+                        <div>
+                            <label for="SrNo_reject">Sr_No.</label>
+                            <input type="text" class="form-control" id="SrNo_reject" name="SrNo" readonly>
+                        </div>
+                        <div>
+                            <label for="position_reject">Position</label>
+                            <input type="text" class="form-control" id="position_reject" name="position" readonly>
+                        </div>
+                        <div class="d-flex flex-row my-2">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal" style="margin-right: 10px;">
+                                Cancel
+                            </button>
+                            <button type="submit" class="btn btn-danger" id="rejectButton">
+                                Reject
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <div style=" margin-top: 20px">
+            <h5>Completed Requests</h5>
+            <table class="table" style="background-color: darkgrey">
+                <thead>
+                    <tr>
+                        <th>SrNo</th>
+                        <th>Apply For</th>
+                        <th>Applied On</th>
+                        <th>Name</th>
+                        <th>Project Name</th>
+                        <th>Project Start Date</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user in completedRequests %}
+
+                        {% if user['Status'] == 'Accepted' %}
+                        <tr class="table-success">
+                        {% else %}
+                        <tr class="table-danger">
+                        {% endif %}
+
+
+                        <td headers="srno">{{user['Sr_No']}}</td>
+                        <td headers="position">{{user['Apply_for']}}</td>
+                        <td>{{user['Applied_on']}}</td>
+                        <td>{{user['Name']}}</td>
+                        <td>{{ user['event_name'] }}</td>
+                        <td>{{ user['start_date'] }}</td>
+                        <td>{{ user['Status'] }}</td>
+                        <td>{{ user['Status'] }}</td>
+                    </tr>
+                    {% endfor %}
+            </table>
+
+        </div>
+
+
+<script>
+
+    function accept_user(e) {
+        let p = e.parentNode.parentNode;
+        let srno = p.querySelector('td[headers="srno"]').innerHTML;
+        console.log(srno)
+        let position = p.querySelector('td[headers="position"]').innerHTML;
+        let form = document.querySelector("form[name='acceptForm']");
+
+
+        form.querySelector("input[name='SrNo']").value = srno;
+        form.querySelector("input[name='position']").value = position;
+      }
+
+
+    function delete_user(e) {
+        let p = e.parentNode.parentNode;
+        let srno = p.querySelector('td[headers="srno"]').innerHTML;
+        console.log(srno)
+        let position = p.querySelector('td[headers="position"]').innerHTML;
+        let form = document.querySelector("form[name='rejectForm']");
+
+
+        form.querySelector("input[name='SrNo']").value = srno;
+        form.querySelector("input[name='position']").value = position;
+      }
+
+</script>
+
+
+
+
+{% endblock content %}
