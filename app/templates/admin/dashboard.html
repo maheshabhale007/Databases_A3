@@ -93,6 +93,14 @@
                                     <i class='bx bx-group'></i><span class="ms-1 d-none d-sm-inline">Team</span></a>
                             </li>
                         {% endif %}
+
+                        {% if type == 'admin' %}
+                            <li class="nav-item light-black">
+                                <a href="{{url_for('requestDetails')}}" class="nav-link align-middle px-2 text-white">
+                                    <i class='bx bx-group'></i><span class="ms-1 d-none d-sm-inline">Applications</span></a>
+                            </li>
+                        {% endif %}
+
                     </ul>
                     <hr>
 

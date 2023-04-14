@@ -2,7 +2,7 @@
 {% block content %}
 <div>
     <div>
-        <h1 style="margin-top: 30px;">Dashboard</h1>
+        <h1 style="margin-top: 30px;">Applications</h1>
         <hr>
         <div style=" margin-top: 20px">
             <h5>Pending Requests</h5>
@@ -13,6 +13,8 @@
                         <th>Apply For</th>
                         <th>Applied On</th>
                         <th>Name</th>
+                        <th>Project Name</th>
+                        <th>Project Start Date</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
@@ -23,6 +25,8 @@
                         <td headers="position">{{user['Apply_for']}}</td>
                         <td>{{user['Applied_on']}}</td>
                         <td>{{user['Name']}}</td>
+                        <td>{{ user['event_name'] }}</td>
+                        <td>{{ user['start_date'] }}</td>
 
                         <td>
                             <button type="button" class="btn btn-primary btn-sm" data-toggle="modal"
@@ -32,10 +36,6 @@
                             <button type="button" class="btn btn-danger btn-sm" data-toggle="modal"
                                 data-target="#rejectModal" onclick="delete_user(this)">
                                 Reject
-                            </button>
-                            <button type="button" class="btn btn-success btn-sm" data-toggle="modal"
-                                data-target="#view_details_Modal" onclick="show_profile(this)">
-                                View
                             </button>
                         </td>
                     </tr>
@@ -120,44 +120,6 @@
             </div>
         </div>
     </div>
-    
-    <div class="modal fade" id="view_details_Modal" tabindex="-1" role="dialog" aria-labelledby="view_details_ModalLabel"
-        aria-hidden="true">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="view_details_ModalLabel">Applicant Detail</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-
-                    <div class="row">
-          
-                      <div class="col-md-8">
-                        <h3 id="profile_name">Ronaldo</h3>
-                          <p id="profile_email">abc@gmail.com</p>
-                        <p id="profile_phone">1234567890</p>
-                        <p id="profile_gender">Gender: Male</p>
-                        <p id="profile_dob">DOB: 10/10/1998</p>
-                        <p id="profile_age">Age: 25</p>
-                        <h4>Projects Enrolled</h4>
-                          <div id="profile_project_table"></div>
-                      </div>
-                      <div class="col-md-4">
-                        <img src="https://via.placeholder.com/150" class="img-fluid">
-                      </div>
-                    </div>
-                  </div>
-                  <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                  </div>    
-            </div>
-        </div>
-    </div>
-
-</div>
 
 
     <div style=" margin-top: 20px">
@@ -169,21 +131,29 @@
                         <th>Apply For</th>
                         <th>Applied On</th>
                         <th>Name</th>
+                        <th>Project Name</th>
+                        <th>Project Start Date</th>
                         <th>Status</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for user in completedRequests %}
-                    <tr>
+
+                        {% if user['Status'] == 'Accepted' %}
+                        <tr class="table-success">
+                        {% else %}
+                        <tr class="table-danger">
+                        {% endif %}
+
+
                         <td headers="srno">{{user['Sr_No']}}</td>
                         <td headers="position">{{user['Apply_for']}}</td>
                         <td>{{user['Applied_on']}}</td>
                         <td>{{user['Name']}}</td>
-                        {% if user['Status'] == 'Accepted' %}
-                        <td style="background-color: chartreuse">{{ user['Status'] }}</td>
-                        {% else %}
-                        <td style="background-color: red">{{ user['Status'] }}</td>
-                        {% endif %}
+                        <td>{{ user['event_name'] }}</td>
+                        <td>{{ user['start_date'] }}</td>
+                        <td>{{ user['Status'] }}</td>
+                        <td>{{ user['Status'] }}</td>
                     </tr>
                     {% endfor %}
             </table>

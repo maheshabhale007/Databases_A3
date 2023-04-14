@@ -1725,9 +1725,9 @@ def apply():
             add_project_query = add_project_query + \
                 f"VALUES (\'{email}\', \'{project_name}\', (SELECT start_date FROM Projects WHERE event_name = \'{project_name}\' AND YEAR(start_date) = \'{project_year}\'))"
             
-            add_to_request_details_query = f"INSERT INTO requestDetails (Sr_No, Apply_for, Applied_on, Name, Status, Query, QueryRelationship) "
+            add_to_request_details_query = f"INSERT INTO requestDetails (Sr_No, Apply_for, Applied_on, Name, Status, Query, QueryRelationship, event_name, start_date) "
             add_to_request_details_query = add_to_request_details_query + \
-                f"VALUES (\'{count_till_now + 1}\', \'{'trainer'}\', \'{today}\', \'{name}\', \'{'Pending'}\', \"{add_query}\", \"{add_project_query}\" )"
+                f"VALUES (\'{count_till_now + 1}\', \'{'trainer'}\', \'{today}\', \'{name}\', \'{'Pending'}\', \"{add_query}\", \"{add_project_query}\", \'{project_name}\', (SELECT start_date FROM Projects WHERE event_name = \'{project_name}\' AND YEAR(start_date) = \'{project_year}\') )"
 
             # print(add_to_request_details_query)
             exec_add_to_request_details_query = cur.execute(add_to_request_details_query)
@@ -1773,9 +1773,9 @@ def apply():
             add_project_query = add_project_query + \
                 f"VALUES (\'{email}\', \'{project_name}\', (SELECT start_date FROM Projects WHERE event_name = \'{project_name}\' AND YEAR(start_date) = \'{project_year}\'))"
 
-            add_to_request_details_query = f"INSERT INTO requestDetails (Sr_No, Apply_for, Applied_on, Name, Status, Query, QueryRelationship) "
+            add_to_request_details_query = f"INSERT INTO requestDetails (Sr_No, Apply_for, Applied_on, Name, Status, Query, QueryRelationship, event_name, start_date) "
             add_to_request_details_query = add_to_request_details_query + \
-                f"VALUES (\'{count_till_now + 1}\', \'{'volunteer'}\', \'{today}\', \'{name}\', \'{'Pending'}\', \"{add_query}\", \"{add_project_query}\" )"
+                f"VALUES (\'{count_till_now + 1}\', \'{'volunteer'}\', \'{today}\', \'{name}\', \'{'Pending'}\', \"{add_query}\", \"{add_project_query}\", \'{project_name}\', (SELECT start_date FROM Projects WHERE event_name = \'{project_name}\' AND YEAR(start_date) = \'{project_year}\') )"
 
             exec_add_to_request_details_query = cur.execute(add_to_request_details_query)
             mysql.connection.commit()
@@ -1789,9 +1789,9 @@ def apply():
 
 @app.route("/admin/requestDetails", methods=['POST', 'GET'])
 def requestDetails():
-    # type = restrict_child_routes()
-    # if type == 'No_access':
-    #     return redirect(url_for('login'))
+    type = restrict_child_routes()
+    if type == 'No_access':
+        return redirect(url_for('login'))
 
     cur = mysql.connection.cursor()
     result_value = cur.execute("SELECT * FROM requestDetails")
@@ -1803,7 +1803,7 @@ def requestDetails():
     for user in userDetails:
         user_profile = {
             'Sr_No': user[0], 'Apply_for': user[1], 'Applied_on': user[2], 'Name': user[3], 'Status': user[4],
-            'Query': user[5]
+            'Query': user[5], 'QueryRelationship': user[6], 'event_name': user[7], 'start_date': user[8]
         }
 
         if user[4] == 'Pending':
