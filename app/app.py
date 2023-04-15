@@ -683,7 +683,13 @@ def volunteers():
             edit_query = edit_query + \
                 f"SET name = \'{volunteers_name}\', email_id = \'{email}\', date_of_birth = \'{date_of_birth}\', gender = \'{gender}\', phone_number = \'{phone}\'"
             edit_query = edit_query + f"WHERE email_id = \'{email}\';"
+
+            # lock the table maximum for 5 seconds
+            cur.execute("SELECT GET_LOCK('requestDetails_lock', 5)")
             exec_query = cur.execute(edit_query)
+            # release the lock
+            cur.execute("SELECT RELEASE_LOCK('requestDetails_lock')")
+
             mysql.connection.commit()
 
             # check if the email_id, project, date exists
@@ -1870,4 +1876,5 @@ def requestDetails():
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    # app.run(host='10.7.35.248')
+    app.run(host='0.0.0.0', port=5000, debug=True)
