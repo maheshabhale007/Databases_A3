@@ -15,7 +15,6 @@ create table staff_password(
 insert into admin_password(EmployeeID,EmployeePassword)
 values ("1","GFfK65EW785wzCKaAA");
 
-
 -- done
 create table Trainers (
 email_id varchar(50) primary key,
