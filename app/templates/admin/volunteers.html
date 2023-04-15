@@ -379,6 +379,21 @@
 
 </div>
 
+
+    <div class="modal fade" id="update-modal" data-bs-backdrop="static" tabindex="-1" role="dialog" aria-labelledby="update-modal-label" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content" style="background:#d9534f;">
+      <div class="modal-header">
+        <h5 class="modal-title" id="update-modal-label" >Data Updated</h5>
+      </div>
+      <div class="modal-body">
+        <p>The data on this page has been updated. Please refresh the page to see the changes.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+
 <script>
     function edit(e) {
         // console.log("Mahesh");
@@ -431,4 +446,24 @@
       }
 
 </script>
+
+{#<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.1.1/socket.io.js"></script>#}
+
+
+<script type="module">
+    import { io } from "https://cdn.socket.io/4.4.1/socket.io.esm.min.js";
+
+    var socket;
+
+    {#ip is replaced with local host. It should be replaced with server ip.#}
+    socket = io.connect('http://127.0.0.1:5000');
+
+    console.log('Connecting to the server');
+    socket.on('message', function(data) {
+        console.log('Connected to the server');
+        console.log(data);
+        $('#update-modal').modal('show');
+    });
+</script>
+
 {% endblock content %}

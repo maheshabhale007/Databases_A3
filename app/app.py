@@ -1,15 +1,17 @@
 # import MySQLdb
 import MySQLdb
 from flask import Flask, render_template, request, redirect, url_for, flash, session
+from flask_socketio import SocketIO, emit
+
 from flask_mysqldb import MySQL
 import yaml
 from email_script import send_email
 import secrets
 from datetime import datetime
 
-
 app = Flask(__name__)
 app.secret_key='secret_key'
+socketio = SocketIO(app)
 
 # Configure the database
 db = yaml.load(open('db.yaml'), Loader=yaml.Loader)
@@ -19,6 +21,7 @@ app.config['MYSQL_PASSWORD'] = db['mysql_password']
 app.config['MYSQL_DB'] = db['mysql_db']
 
 mysql = MySQL(app)
+
 
 def if_admin():
     cursor = mysql.connection.cursor()
@@ -526,6 +529,8 @@ def village_profile():
 
 @app.route("/admin/volunteers", methods=['POST', 'GET'])
 def volunteers():
+    # socketio.emit('message', {'signal': 'editUser'})
+
     type = restrict_child_routes()
     if type == 'No_access':
         return redirect(url_for('login'))
@@ -662,6 +667,7 @@ def volunteers():
             exec_query = cur.execute(add_project_query)
             mysql.connection.commit()
 
+            socketio.emit('message', {'signal': 'refresh'})
             return redirect('/admin/volunteers')
 
         elif request.form['signal'] == 'editUser':
@@ -704,6 +710,7 @@ def volunteers():
                 mysql.connection.commit()
                 print("Trainer added to project")
 
+            socketio.emit('message', {'signal': 'refresh'})
             return redirect('/admin/volunteers')
 
         elif request.form['signal'] == 'delete':
@@ -715,6 +722,8 @@ def volunteers():
 
             exec_query = cur.execute(delete_query)
             mysql.connection.commit()
+
+            socketio.emit('message', {'signal': 'refresh'})
             return redirect('/admin/volunteers')
 
         elif request.form['signal'] == 'logout':
@@ -1874,7 +1883,11 @@ def requestDetails():
 
     return render_template("admin/dashboard_request.html", pendingRequests=pendingRequests, completedRequests=completedRequests)
 
+# @socketio.on('message')
+# def handle_message(message):
+#     emit('Hello from Dheeraj!', message, broadcast=True)
 
 if __name__ == '__main__':
     # app.run(host='10.7.35.248')
     app.run(host='0.0.0.0', port=5000, debug=True)
+    # socketio.run(app)
